@@ -1,0 +1,10 @@
+<launch>
+    <group ns="radar0">
+        <param name="can_port" value="can0"/>
+        <node name="radar_conti" pkg="radar_conti" type="radar_conti" output="screen"/>
+    </group>
+    <group ns="radar1">
+        <param name="can_port" value="can1"/>
+        <node name="radar_conti" pkg="radar_conti" type="radar_conti" output="screen"/>
+    </group>
+</launch>
