@@ -15,6 +15,13 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf/transform_broadcaster.h>
 
+#include <sensor_msgs/PointCloud2.h>
+
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/conversions.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 #include <radar_conti/ObjectList.h>
 #include <radar_conti/ClusterList.h>
 #include <radar_conti/RadarState.h>
@@ -55,7 +62,8 @@ private:
     can::FrameListenerConstSharedPtr frame_listener_;
     //can::DriverInterfaceSharedPtr radar_can_output;
     //create Publisher
-    ros::Publisher pub_marker;
+    // ros::Publisher pub_marker;
+    ros::Publisher pub_cloud;
     ros::Publisher pub_objects;
     ros::Publisher pub_cluster;
     ros::Publisher pub_cluster_list;
@@ -73,6 +81,8 @@ private:
     void publish_object_map();
 
     void publish_cluster_map();
+
+    void publish_cluster_pointcloud();
     //create map container for object list
     std::map<int,radar_conti::Object> object_map_;
 

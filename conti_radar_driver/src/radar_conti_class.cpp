@@ -4,12 +4,12 @@ Radar_Conti::Radar_Conti(const ros::NodeHandle &nh) : nh(nh) {};
 
 void Radar_Conti::init(can::DriverInterfaceSharedPtr &driver_)
 {
-    pub_marker = nh.advertise<visualization_msgs::MarkerArray>("radar_objects_marker",0);
+    // pub_marker = nh.advertise<visualization_msgs::MarkerArray>("radar_objects_marker",0);
     pub_objects = nh.advertise<radar_conti::ObjectList>("radar_object_list",0);
     collison_obj_pub = nh.advertise<radar_conti::CollisonList>("radar_obj_collison",0);
     pub_cluster = nh.advertise<visualization_msgs::MarkerArray>("radar_cluster_markers",0);
     pub_cluster_list = nh.advertise<radar_conti::ClusterList>("radar_cluster_list",0);
-
+    pub_cloud = nh.advertise<sensor_msgs::PointCloud2>("point_cloud",0s);
     this->driver_ = driver_;
     this->frame_listener_ = driver_->createMsgListenerM(this,&Radar_Conti::can_frame_callback);
 }
@@ -176,7 +176,7 @@ void Radar_Conti::handle_cluster_list(const can::Frame &msg)
         cluster_map_[id].cluster_quality.cluster_distlong_rms.data =
                 CALC_Cluster_2_Quality_Cluster_DistLong_rms(GET_Cluster_2_Quality_Cluster_DistLong_rms(msg.data),1.0);
         cluster_map_[id].cluster_quality.cluster_vrellong_rms.data =
-                CALC_Cluster_1_General_Cluster_VrelLong(GET_Cluster_1_General_Cluster_VrelLong(msg.data),1.0);
+                CALC_Cluster_2_Quality_Cluster_VrelLong_rms(GET_Cluster_2_Quality_Cluster_VrelLong_rms(msg.data),1.0);
         cluster_map_[id].cluster_quality.cluster_vrellat_rms.data = 
                 CALC_Cluster_2_Quality_Cluster_VrelLat_rms(GET_Cluster_2_Quality_Cluster_VrelLat_rms(msg.data),1.0);
         cluster_map_[id].cluster_quality.cluster_pdh0.data = 
@@ -371,7 +371,7 @@ void Radar_Conti::publish_object_map() {
         }
         collison_obj_pub.publish(coll_list);
         pub_objects.publish(object_list_);
-        pub_marker.publish(marker_array);
+        //pub_marker.publish(marker_array);
 
 }
 void Radar_Conti::publish_cluster_map()
@@ -496,3 +496,24 @@ void Radar_Conti::publish_cluster_map()
 
 }
 
+
+
+void Radar_Conti::publish_cluster_pointcloud()
+{
+        std::map<int, radar_conti::Cluster>::iterator itr;
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        
+        for (itr = cluster_map_.begin(); itr != cluster_map_.end(); ++itr) 
+        {
+                pcl::PointXYZ pcl_point;
+                pcl_point.x = itr->second.cluster_general.cluster_distlong.data;
+                pcl_point.y = itr->second.cluster_general.cluster_distlat.data;
+                pcl_point.z = 1.0;
+                cloud.points.push_back(pcl_point);
+        }
+        cloud.header.frame_id = frame_id_;
+        pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+        sensor_msgs::PointCloud2 output;
+        pcl::toROSMsg(cloud, output);
+        pub_cloud.publish(output);
+}
