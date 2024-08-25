@@ -9,7 +9,7 @@ void Radar_Conti::init(can::DriverInterfaceSharedPtr &driver_)
     collison_obj_pub = nh.advertise<radar_conti::CollisonList>("radar_obj_collison",0);
     pub_cluster = nh.advertise<visualization_msgs::MarkerArray>("radar_cluster_markers",0);
     pub_cluster_list = nh.advertise<radar_conti::ClusterList>("radar_cluster_list",0);
-    pub_cloud = nh.advertise<sensor_msgs::PointCloud2>("point_cloud",0s);
+    pub_cloud = nh.advertise<sensor_msgs::PointCloud2>("point_cloud",0);
     this->driver_ = driver_;
     this->frame_listener_ = driver_->createMsgListenerM(this,&Radar_Conti::can_frame_callback);
 }

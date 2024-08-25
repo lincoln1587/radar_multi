@@ -82,14 +82,22 @@ int main(int argc, char **argv)
         ros::init(argc, argv, "lidar_filt");
         ros::NodeHandle nh;
 
+        std::string can_device;
+        ros::param::get("can_port", can_device);
+
         can::DriverInterfaceSharedPtr radar_output = std::make_shared<can::ThreadedSocketCANInterface> ();
 
-        if(!radar_output->init("can0",0)) 
+        // if(!radar_output->init("can0",0)) 
+        // {
+        //         ROS_FATAL("Failed to initialize can_device at CAN0");
+        //         return 1;
+        // }
+        if(!radar_output->init(can_device,0)) 
         {
-                ROS_FATAL("Failed to initialize can_device at CAN0");
+                ROS_FATAL("Failed to initialize can_device at %s",can_device.c_str());
                 return 1;
         }
-
+        
         can::FrameListenerConstSharedPtr frame_listener_ = radar_output->createMsgListener(can_receive_callback);
 
         ros::spin();
